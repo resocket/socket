@@ -1,0 +1,54 @@
+{
+  "name": "@resocket/socket",
+  "version": "0.0.0",
+  "description": "a better reconnecting websocket for everyone",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "module": "./dist/index.mjs",
+        "default": "./dist/index.js"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react.d.mts",
+        "default": "./dist/react.mjs"
+      },
+      "require": {
+        "types": "./dist/react.d.ts",
+        "module": "./dist/react.mjs",
+        "default": "./dist/react.js"
+      }
+    }
+  },
+  "files": [
+    "./dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "pub": "npm version patch  && npm run build &&  npm publish"
+  },
+  "keywords": [
+    "multiplayer",
+    "websocket"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/ws": "^8.5.11",
+    "jsdom": "^24.1.1"
+  },
+  "dependencies": {
+    "vitest": "^2.0.5"
+  }
+}
