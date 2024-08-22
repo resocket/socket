@@ -1,0 +1,17 @@
+# Licensing Information
+
+This repository contains multiple packages, each of which may be licensed under different terms.
+
+## Packages with Open-Source Licenses
+
+Certain packages in this repository are open-sourced under permissive licenses such as the MIT License. These packages are intended to be freely used, modified, and distributed. The specific license for each open-source package can be found in the respective package directory.
+
+## Packages with Commercial Licenses
+
+Other packages in this repository are subject to stricter licensing terms and may require a paid license for commercial use. The specific license for each of these packages can also be found in the respective package directory.
+
+## Summary
+
+Please refer to the `LICENSE` file within each package's directory for the exact licensing terms that apply.
+
+If you are unsure about the licensing of a particular package or need further clarification, please contact [Your Contact Information].
