@@ -1,6 +1,6 @@
 {
   "name": "@resocket/socket",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "a better reconnecting websocket for everyone",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -39,7 +39,9 @@
   },
   "keywords": [
     "multiplayer",
-    "websocket"
+    "websocket",
+    "websockets",
+    "realtime"
   ],
   "author": "",
   "license": "ISC",
