@@ -85,7 +85,7 @@ export const createSocketContext = (config: CreateSocketConfig) => {
         socket.on("message", (e) => {
           listenersRef.current?.onMessage?.(e);
         }),
-        socket.on("statusChange", (e) => {
+        socket.on("status", (e) => {
           listenersRef.current?.onStatusChange?.(e);
         }),
         socket.on("disconnect", (e) => {
@@ -110,7 +110,7 @@ export const createSocketContext = (config: CreateSocketConfig) => {
     const snapshot = socket.getStatus;
     return useSyncExternalStore(
       (notify) => {
-        return socket.on("statusChange", notify);
+        return socket.on("status", notify);
       },
       snapshot,
       snapshot

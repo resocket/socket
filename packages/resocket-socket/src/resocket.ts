@@ -12,7 +12,7 @@ export interface WebSocketEventMap {
   //todo heh, improve this type
   disconnect: CloseEvent | ErrorEvent | StopRetry | undefined;
 
-  statusChange: Status;
+  status: Status;
   lostConnection: LostConnectionStatus;
 
   _internalStateChange: State;
@@ -199,7 +199,7 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
 
     this.attachWindowEvents();
 
-    this.addEventListener("statusChange", this.handleLostConnection);
+    this.addEventListener("status", this.handleLostConnection);
 
     if (!this._options.startClosed) this.transition("auth");
   }
@@ -721,7 +721,7 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
   private stopped() {
     this.removeWindowEvents();
     this.dispatchEvent("disconnect", undefined);
-    this.removeEventListener("statusChange", this.handleLostConnection);
+    this.removeEventListener("status", this.handleLostConnection);
   }
 
   // for both lost connection. and slow inittial connection
@@ -933,7 +933,7 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
     this._status = newStatus;
 
     //since we do not want to dispatch unnecessary status updates on every state transition. we'll only dispatch if the status actually changed
-    if (prevStatus !== newStatus) this.dispatchEvent("statusChange", newStatus);
+    if (prevStatus !== newStatus) this.dispatchEvent("status", newStatus);
   }
 
   //useful for when we want to do cleanups when leaving certain states

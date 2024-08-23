@@ -154,7 +154,7 @@ itDone("[config] should respect  closeCodes", (done) => {
     recievedStateSequence.push(state);
   });
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     if (status === "closed") {
       expect(expectedStateSequence).toEqual(recievedStateSequence);
       connection.close();
@@ -208,7 +208,7 @@ itDone("[config] should respect params", (done) => {
     },
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(connection.url).toBe(`${URL}?data=ninja+hattori`);
       connection.close();
@@ -383,7 +383,7 @@ itDone("should notify on lost connection - slow reconnection", async (done) => {
     LostConnectionStatus = event;
   });
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     if (status === "connected") {
       vitest.useFakeTimers();
       connection.reconnect();
@@ -421,7 +421,7 @@ itDone("[default] should not send ping", async (done) => {
     startClosed: true,
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(pingCount).toBe(0);
 
@@ -461,7 +461,7 @@ itDone(
       heartbeatInterval: 1000,
     });
 
-    connection.addEventListener("statusChange", async (status) => {
+    connection.addEventListener("status", async (status) => {
       if (status === "connected") {
         expect(pingCount).toBe(0);
 
@@ -513,7 +513,7 @@ itDone(`[default] should timeout the ping`, async (done) => {
 
   const recievedStateSequence: string[] = [];
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     if (status === "connected") {
       vitest.advanceTimersByTime(1005);
     }
@@ -560,7 +560,7 @@ itDone("[config] should respect pingTimeout", async (done) => {
 
   const recievedStateSequence: string[] = [];
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     if (status === "connected") {
       vitest.advanceTimersByTime(1000);
     }
@@ -595,7 +595,7 @@ itDone(
       });
     });
 
-    const connection = new ReSocket(URL, ["culprit"], {
+    const connection = new ReSocket(URL, [], {
       startClosed: true,
       heartbeatInterval: 1000,
       maxMissedPingss: 2,
@@ -614,7 +614,7 @@ itDone(
 
     const recievedStateSequence: string[] = [];
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "connected") {
         vitest.advanceTimersByTime(1000);
       }
@@ -673,7 +673,7 @@ itDone(
 
     const recievedStateSequence: string[] = [];
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "connected") {
         vitest.advanceTimersByTime(1000);
       }
@@ -717,7 +717,7 @@ itDone("[config] should respect pingMessage", async (done) => {
     pingMessage,
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(pingCount).toBe(0);
 
@@ -758,7 +758,7 @@ itDone("[config] should respect pongMessage", async (done) => {
     pongMessage,
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(pingCount).toBe(0);
 
@@ -793,7 +793,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", async (status) => {
+    connection.addEventListener("status", async (status) => {
       if (status === "connected") {
         expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -823,7 +823,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", async (status) => {
+    connection.addEventListener("status", async (status) => {
       if (status === "connected") {
         expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -852,7 +852,7 @@ itDone("[config] should respect ignoreNetworkEvent", async (done) => {
     recievedStateSequence.push(state);
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -880,7 +880,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", async (status) => {
+    connection.addEventListener("status", async (status) => {
       if (status === "connected") {
         expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -910,7 +910,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", async (status) => {
+    connection.addEventListener("status", async (status) => {
       if (status === "connected") {
         expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -939,7 +939,7 @@ itDone("[config] should respect ignoreFocusEvent", async (done) => {
     recievedStateSequence.push(state);
   });
 
-  connection.addEventListener("statusChange", async (status) => {
+  connection.addEventListener("status", async (status) => {
     if (status === "connected") {
       expect(expectedStateSequence).toEqual(recievedStateSequence);
 
@@ -1086,7 +1086,7 @@ itDone("[config] should respect debugLogger", (done) => {
     },
   });
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     if (status === "connected") {
       expect(warnSpy).toHaveBeenCalledTimes(3);
 
@@ -1598,7 +1598,7 @@ itDone("[behaviour] should notify connection status properly", (done) => {
 
   const recievedConnectionStatuses: string[] = [];
 
-  connection.addEventListener("statusChange", (status) => {
+  connection.addEventListener("status", (status) => {
     recievedConnectionStatuses.push(status);
   });
 
@@ -2032,7 +2032,7 @@ itDone(
       },
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         done();
       }
@@ -2077,7 +2077,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         //@ts-expect-error -- accessing private property
         expect(connection._bufferedMessages.length).toBe(2);
@@ -2211,7 +2211,7 @@ itDone(
       expect(true).toBeFalsy();
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         done();
       }
@@ -2256,7 +2256,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         //@ts-expect-error -- accessing private property
         expect(connection._bufferedMessages.length).toBe(2);
@@ -2305,7 +2305,7 @@ itDone(
       recievedStateSequence.push(state);
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         //@ts-expect-error -- accessing private property
         expect(connection._bufferedMessages.length).toBe(2);
@@ -2362,7 +2362,7 @@ itDone(
       expect(true).toBeFalsy();
     });
 
-    connection.addEventListener("statusChange", (status) => {
+    connection.addEventListener("status", (status) => {
       if (status === "disconnected") {
         expect(expectedStateSequence).toEqual(recievedStateSequence);
         done();
