@@ -16,7 +16,7 @@
 
 ### Documentation
 
-You can find the documentation for Socket [here](https://docs.resocket.io).
+You can find the documentation for Socket [here](https://docs.resocket.io/socket).
 
 ### Motivation
 
@@ -36,6 +36,6 @@ You can also follow me on Twitter [@\_shibru\_](https://x.com/_shibru_) for upda
 
 ### Acknowledgements
 
-This project takes inspiration from some of my past works [reconnecting websocket (counter machine pattern)](https://github.com/dev-badace/party-socket-test) & [partyworks's implementation](https://github.com/Partywork/partyworks/tree/master/packages/partyworks-socket). and the APIs are also hugely inspired by [liveblocks](https://liveblocks.io) (it's a team whose work I respect and admire alot). also thankx to @threepointone for sponsoring this in the past.
+This project takes inspiration from some of my past works [reconnecting websocket (counter machine pattern)](https://github.com/dev-badace/party-socket-test) & [partyworks's implementation](https://github.com/Partywork/partyworks/tree/master/packages/partyworks-socket). and the APIs are also hugely inspired by [liveblocks](https://liveblocks.io) (it's a team whose work I respect and admire alot). also thankx to [@threepointone](https://x.com/threepointone) for sponsoring this in the past.
 
 Resocket ~ Ace
