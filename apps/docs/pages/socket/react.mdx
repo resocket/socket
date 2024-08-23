@@ -1,0 +1,287 @@
+import { Tabs } from "nextra/components";
+import { Callout } from "nextra/components";
+
+### React
+
+Socket has first class support for react. In this guide we will be looking at how to use `@resocket/socket` with react.
+
+#### Pre requisite
+
+you should have a local or remote websocket server that you can connect to, please take a look at [this guide](todo) to setup a websocket server
+
+<Callout type="warning" emoji="⚠️">
+  Our React Support is currently in beta, if you find any issues please report
+  we'll fix them asap!.
+</Callout>
+
+#### Installation
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tabs.Tab key="npm" label="npm">
+    ```bash 
+     npm install @resocket/socket
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab key="pnpm" label="pnpm">
+    ```bash 
+    pnpm install @resocket/socket 
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab key="yarn" label="yarn">
+    ```bash 
+    yarn add @resocket/socket 
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+#### Setup
+
+<Callout type="info">
+  You can also checkout our connection status example
+  [here](https://github.com/resocket/Socket/tree/master/examples/nextjs-connection-status)
+</Callout>
+
+Socket provides a convenient factory function that generates custom React hooks. These hooks manage the WebSocket connection and make it accessible across your component tree.
+
+The setup involves two key steps:
+
+1. **Creating the Context**: Use `createSocketContext` to generate a context provider and a custom hook.
+2. **Using the Provider**: Wrap your components with the SocketProvider to grant access to the WebSocket instance within any component using the useSocket hook.
+
+Below is an example of how to set up and use these tools in your React app:
+
+```tsx
+import { createSocketContext } from "@resocket/socket/react";
+
+/**
+ * Creates a React context with hooks to manage your WebSocket connection.
+ *
+ * - `<SocketProvider>`: A context provider component that wraps your app or specific components.
+ * - `useSocket()`: A hook to access your WebSocket instance.
+ */
+const { SocketProvider, useSocket } = createSocketContext({
+  url: "ws://localhost:9000/",
+});
+
+const Main = () => {
+  /**
+   * Wrap your components with <SocketProvider> to make the WebSocket instance
+   * available throughout the component tree. Inside any component within
+   * the provider, use the `useSocket` hook to access the WebSocket instance.
+   */
+  return (
+    <SocketProvider>
+      <SomeComponentUsingSocket />
+    </SocketProvider>
+  );
+};
+```
+
+#### useSocket
+
+The **`useSocket`** hook allows you to access the WebSocket instance directly within your React components. This hook gives you full control over the WebSocket connection, enabling you to send messages, close the connection, and listen for events—just as you would with a regular WebSocket object.
+
+Below is an example demonstrating how to use the useSocket hook:
+
+```tsx socket.tsx
+import { createSocketContext } from '@resocket/socket/react
+
+const { SocketProvider, useSocket } = createSocketContext({
+  url: "ws://localhost:9000/",
+});
+
+
+const Toggle = () => {
+  /**
+   * Retrieve the WebSocket instance using the `useSocket` hook.
+   *
+   * Once you have the instance, you can interact with the WebSocket
+   * just like you would with a standard WebSocket object.
+   *
+   * Example usage:
+   * socket.send("test");
+   * socket.close();
+   * socket.addEventListener("message", (e) => {
+   *   console.log(e);
+   * });
+   */
+  const socket = useSocket();
+
+  return (
+    <button
+      /**
+       * Send a message to the server when the button is clicked.
+       * This works similarly to the standard `socket.send()` method.
+       */
+      onClick={() => socket.send("toggle")}
+    >
+      toggle
+    </button>
+  );
+};
+
+
+```
+
+#### useStatus
+
+The useStatus hook provides real-time updates on the current status of your WebSocket connection. This hook can return one of the following states, each indicating a specific phase in the WebSocket lifecycle:
+
+- `"connecting"`: The WebSocket is in the process of connecting to the server.
+- `"connected"`: The WebSocket has successfully established a connection.
+- `"reconnecting"`: The connection was lost, and it is currently attempting to re-establish a connection.
+- `"disconnected"`: The WebSocket connection is completely closed.
+
+These statuses are particularly useful for creating connection status indicators that update as the connection state changes.
+
+Here’s an example of how to use the useStatus hook in a React component:
+
+```tsx socket.tsx
+import styles from "./ConnectionStatus.module.css"; //note this file can be found at https://github.com/resocket/socket/examples/nextjs-connection-status/src/
+import { createSocketContext } from '@resocket/socket/react
+
+const { SocketProvider, useStatus } = createSocketContext({
+  url: "ws://localhost:9000/",
+});
+
+
+export const ConnectionStatus = () => {
+
+  /**
+   * Retrieves the current connection status of the WebSocket.
+   * The component will automatically re-render whenever the status changes,
+   * ensuring the UI stays updated with the latest connection state.
+   */
+  const status = useStatus();
+
+  return (
+    <div>
+      <div className={styles.status} data-status={status}>
+        <div className={styles.statusCircle} />
+        <div className={styles.statusText}>{status}</div>
+      </div>
+    </div>
+  );
+};
+
+```
+
+Automatically unsubscribes when the component is unmounted.
+
+#### useMessage
+
+The `useMessage` hook allows you to easily listen for incoming WebSocket messages without needing to manually set up event listeners. This hook simplifies the process, automatically handling subscriptions and clean-up, so you can focus on handling the messages received from the server.
+
+Here’s an example of how to use the useMessage hook to listen for messages and update your component state:
+
+```tsx socket.tsx
+import {useState} from "react";
+import { createSocketContext } from '@resocket/socket/react
+
+const { SocketProvider, useMessage } = createSocketContext({
+  url: "ws://localhost:9000/",
+});
+
+export const Messages = () => {
+  const [chats, setChats] = useState([]);
+
+  /**
+   * Listens for incoming messages from the WebSocket connection.
+   * The callback is triggered every time a message is received.
+   *
+   * Example:
+   * Assuming the message data is in the format: { message: "some string value" }
+   */
+  useMessage((e) => {
+    const data = JSON.parse(e.data);
+    setChats((prevChats) => [...prevChats, data.message]);
+  });
+
+
+ // A basic example displaying the messages received
+  return chats.map((chat) => {
+    return <div key={chat}> {chat} </div>
+  });
+};
+
+
+```
+
+Automatically unsubscribes when the component is unmounted.
+
+#### useLostConnectionListener
+
+The useLostConnectionListener hook allows you to handle situations where the connection is lost and does not reconnect within a specified time frame.
+
+You can use this hook to notify users of connection issues, such as through toast notifications. This hook is triggered with the following events:
+
+- `"lost"`: When the connection is lost and reconnection attempts are ongoing.
+- `"restored"`: When the connection is successfully reestablished.
+- `"failed"`: When the connection cannot be restored (rare).
+
+You can configure the timeout for the lostConnectionTimeout option (default is 5 seconds):
+
+```tsx
+import { toast } from "my-preferred-toast-library";
+
+const { SocketProvider, useLostConnectionListener } = createSocketContext({
+  url: "ws://localhost:9000/",
+  options: {
+    lostConnectionTimeout: 5000, // Timeout in milliseconds
+  },
+});
+
+function App() {
+  useLostConnectionListener((event) => {
+    switch (event) {
+      case "lost":
+        toast.warn("Still trying to reconnect...");
+        break;
+
+      case "restored":
+        toast.success("Successfully reconnected again!");
+        break;
+
+      case "failed":
+        toast.error("Could not restore the connection");
+        break;
+    }
+  });
+}
+```
+
+Automatically unsubscribes when the component is unmounted.
+
+#### Configuration
+
+let's take a look at more configuration. `createSocketContext` takes all the similar options to the JavaScript/Typescript version.
+
+<Callout type="info">
+  **Api Reference** - You can take a look at all the available options in the
+  [API Reference]()
+</Callout>
+
+```tsx socket.tsx
+import {createSocketContext} from '@resocket/socket/react
+
+const { SocketProvider, useSocket } = createSocketContext({
+  //the url for websocket connection
+  url: "ws://localhost:9000/",
+
+  //the protocol option in websocket connection. eg:  new Websocket(url, protocols)
+  protocols: [],
+
+  options: {
+    /**
+     * sends a heatbeat ping every 5 seconds
+     */
+    heartbeatInterval: 5000,
+
+    /**
+     * maximum number or retries before moving to a disconnected state.
+     */
+    maxRetries: 5
+  }
+});
+```

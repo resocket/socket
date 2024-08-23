@@ -1,0 +1,16 @@
+{
+  "quickstart": {
+    "title": "Get Started",
+    "theme": {
+      "typesetting": "article",
+      "breadcrumb": false
+    }
+  },
+  "react": {
+    "title": "React",
+    "theme": {
+      "typesetting": "article",
+      "breadcrumb": false
+    }
+  }
+}

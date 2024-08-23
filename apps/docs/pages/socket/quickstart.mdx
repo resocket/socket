@@ -1,0 +1,519 @@
+import { Tabs } from "nextra/components";
+import { Callout } from "nextra/components";
+
+### Quickstart
+
+In this guide, we will set up a reconnecting WebSocket with heartbeats (ping/pong). We will also explore its configurations
+
+<Callout type="info">
+  **React Quickstart** - if you want to use socket in a react app. you can take
+  a look at the [React Quickstart](/socket/react)
+</Callout>
+
+#### Pre requisite
+
+you should have a local or remote websocket server that you can connect to, please take a look at [this guide](todo) to setup a websocket server
+
+#### Installation
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tabs.Tab key="npm" label="npm">
+    ```bash 
+    npm install @resocket/socket 
+    ```
+    
+  </Tabs.Tab>
+  <Tabs.Tab key="pnpm" label="pnpm">
+    ```bash 
+    pnpm install @resocket/socket 
+    ```
+    
+  </Tabs.Tab>
+  <Tabs.Tab key="yarn" label="yarn">
+    ```bash 
+    yarn add @resocket/socket 
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+#### Setup
+
+Socket is mostly compatible with the standard WebSocket API. so you can just use it how you'd use a normal websocket
+
+```ts
+import { Socket } from "@resocket/socket";
+
+// WebSocket server endpoint
+const ServerUrl = "ws://localhost:8000";
+
+/**
+ * create a new Reconnecting Websocket
+ * it will automatically reconnect if the connection drops
+ */
+const socket = new Socket(ServerUrl);
+
+// Listen for messages from the WebSocket server
+socket.addEventListener("message", (e) => {
+  console.log(e.data); // Logs the WebSocket message
+});
+
+/**
+ * subscribe to the connection status changes
+ * this is useful if you want to add connection status indicators
+ */
+socket.addEventListener("status", (status) => {
+  console.log(status); // Possible values: 'connecting', 'reconnecting', 'connected', 'closed', 'disconnected'
+});
+```
+
+---
+
+#### HeartBeat (Ping/PONG)
+
+You can easily add heartbeats to your connection with a simple configuration. The example below configures a heartbeat every 30 seconds, ensuring the connection remains active and responsive.
+
+```ts
+import { Socket, type SocketConfig } from "@resocket/socket";
+
+// WebSocket server endpoint
+const ServerUrl = "ws://localhost:8000";
+
+// WebSocket protocols (optional, use an empty array if not needed)
+const SocketProtocols: string[] = [];
+
+// Socket configuration
+const config: SocketConfig = {
+  /**
+   * add heartbeats to your connection
+   * this will send a heartbeat (ping/pong) every 30 seconds
+   */
+  heartbeat: 30000, // 30 seconds
+};
+
+const socket = new Socket(ServerUrl, SocketProtocols, config);
+```
+
+### Authentication
+
+Here's one of a few ways you can add authentication to your Websocket connection using the `params` option.
+
+`params` takes a function that should return an object or a Promise that resolves to an object. this object then is added to the query param of the websocket connection url.
+you can use `params` as follows.
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * Whatever you return from this function will be added as an queryParam to the connection url
+   *
+   * in our case we return the token,
+   * ws://localhost:9000/?token=${TOKEN_VALUE_THAT_WAS_RETURNED_FROM_THIS_FUNCTION}
+   */
+  params: async () => {
+    const token = await MyAuthProvider.getToken();
+
+    return {
+      token,
+    };
+  },
+});
+```
+
+### Connection Timeouts
+
+you can also add custom connection timeouts for both your `param` function and for the connection itself.
+here's the following config
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * if your params function takes longer than
+   * the paramsTimeout, then it'll automatically fail
+   * and move to retry
+   */
+  paramsTimeout: 10000, //10 seconds - default is 10 seconds
+
+  /**
+   * if your websocket connection takes longer than
+   * the connectionTimeout, then it'll automatically fail
+   * and move to retry
+   *
+   * note: connectionTimeout is started after the params function resolves and socket is starting it's connection
+   */
+  connectionTimeout: 10000, //10 seconds - default is 10seconds
+});
+```
+
+### Closing Websocket Connection
+
+There are many ways to close the websocket connection both from the server and the client. in this section we will look the configurations and options related to closing the websocket connection.
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * Your socket will not reconnect. if the server closes the websocket connection
+   * with any of the closeCodes that you provide to the config.
+   *
+   * server side - you can call something like socket.close(4000)  <- this is example server code
+   */
+  closeCodes: [4000], //example value:  [4001, 4002] - defaults to []
+
+  /**
+   *  Your socket will move to a failed state (disconnected state)
+   *  after 10 consecutive failed attempts to connect
+   */
+  maxRetries: 10, //default is infinity
+});
+
+/**
+ * Calling socket.close()  will also stop your websocket connection
+ * the connnection will not try to reconnect if you call close.
+ *
+ * after calling .close() the connection will only reconnect when you explicitly call socket.reconnect();
+ */
+socket.close();
+```
+
+#### StopRetry
+
+Sometimes you may also want to stop the retry from the `param` function.
+for example if the user doesn't have the correct permissions or some other business logic
+you can do this by throwing a `StopRetry` error.
+
+```ts
+import { Socket, StopRetry } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  params: async () => {
+    const hasPermissions = await MyAuthProvider.hasPermissions();
+
+    /**
+     * We're throwing a StopRetry error here
+     * this will automatically tell Socket to not reconnect
+     * and we will move on to failed/disconnected state
+     *
+     */
+    if (!hasPermissions) throw new StopRetry("You're not authorized");
+
+    //retrurn whatever auth data or any other data you want here
+    return {};
+  },
+});
+
+/**
+ * You can catch the stop retry error on disconnect here
+ * it'll be either CloseEvent, ErrorEvent, StopRetry or undefined
+ */
+socket.addEventListener("disconnect", (e) => {
+  if (e instanceof StopRetry) toast(e.message);
+});
+```
+
+### Customize Reconnection Delays
+
+there are many ways to customize your websocket reconnection and retries. in this section we will look at the configuration related to reconnection and retries.
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * you can set the reconnection delay grow factor config option
+   * this let's you control how fast the reconnection delays grow
+   *
+   * delay = minReconnectionDelay * Math.pow(reconnectionDelayGrowFactor, retryCount)
+   */
+  reconnectionDelayGrowFactor: 1.3, //default value - 1.3
+
+  /**
+   * your socket will have atleast the minReconnectionDelay
+   * before trying to reconnect
+   */
+  minReconnectionDelay: 2000, // Default - (1000 + Math.random() * 4000)
+
+  /**
+   * your socket will at max wait for maxReconectionDelay
+   * befoer trying to reconnect
+   */
+  maxReconnectionDelay: 4000, // Default - 10000 (10 seconds)
+});
+```
+
+#### getDelay()
+
+sometimes you may want to add custom delays based on your application logic. you can do this with `getDelay` option.
+
+<Callout type="warning">
+  using `getDelay` will override the following config methods.
+  `minReconnectionDelay`, `maxReconectionDelay`, `reconnectionDelayGrowFactor`
+</Callout>
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  getDelay: () => {
+    //you can return your custom delay here
+    return Math.random() * Math.random();
+  },
+});
+```
+
+### Customize Heartbeat
+
+in this section we will take a look at all the config options related to heartbeats.
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   *  sends a heartbeat on focus events.
+   *  will ignore focus events if set to true
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  ignoreFocusEvents: true, //default false
+
+  /**
+   *  sends a heartbeat on network offline events.
+   *  will ignore network events if set to true
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  ignoreFocusEvents: true, //default false
+
+  /**
+   *  maximum number of consecutive missed ping messages
+   *  before the connection is moved to reconnect
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  maxMissedPings: 2, //default 1
+
+  /**
+   * the amount of time to wait for server to respond to the ping message
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  pingTimeout: 2000, //default 3000 (3 seconds)
+
+  /**
+   * the ping message to send to the server
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  pingMessage: "PING", //default "ping"
+
+  /**
+   * the pong message to recieve from the server
+   *
+   *  note: only applicable if heartbeatInterval is set
+   */
+  pingMessage: "PING", //default "pong"
+});
+```
+
+### Buffering
+
+Socket has default support for buffering. and exposes options to make it easier to add custom buffering for your application.
+
+config 1
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * this buffers the message if the connection is dropped
+   * and sends all the messages upon reconnection
+   */
+  buffering: true,
+});
+```
+
+config2
+
+```ts
+import { Socket } from "@resocket/socket";
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * this buffers the message if the connection is dropped
+   * and sends all the messages upon reconnection
+   *
+   * this will drop the message from buffering if the messages increase the
+   * maxEnqueuedMessages threshold
+   */
+  buffering: { maxEnqueuedMessages: 100 },
+});
+```
+
+custom buffering
+
+```ts
+import { Socket } from "@resocket/socket";
+
+let buffer = [];
+
+const socket = new Socket("ws://localhost:9000/");
+
+/**
+ * send buffered message on connect
+ */
+socket.addEventListener("open", () => {
+  buffer.map((message) => {
+    socket.send(message);
+  });
+
+  buffer = [];
+});
+
+/**
+ * buffer the message if socket is not ready
+ */
+if (socket.canSend()) {
+  socket.send("message");
+} else {
+  buffer.push("message");
+}
+```
+
+### LostConnection Toast
+
+this option allows you to handle situations where the connection is lost and does not reconnect within a specified time frame.
+
+You can use this hook to notify users of connection issues, such as through toast notifications. This hook is triggered with the following events:
+
+- `"lost"`: When the connection is lost and reconnection attempts are ongoing.
+- `"restored"`: When the connection is successfully reestablished.
+- `"failed"`: When the connection cannot be restored (rare).
+
+You can configure the timeout for the lostConnectionTimeout option (default is 5 seconds):
+
+```ts
+import { Socket } from "@resocket/socket";
+import { toast } from "some-toast-library"; //add your toast library here
+
+const socket = new Socket("ws://localhost:9000/", [], {
+  /**
+   * sets the lost connection timeout
+   */
+  lostConnectionTimeout: 10000, //defaul to 5 seconds
+});
+
+socket.addEventListener("lostConnection", (event) => {
+  switch (event) {
+    case "lost":
+      toast.warn("Still trying to reconnect...");
+      break;
+
+    case "restored":
+      toast.success("Successfully reconnected again!");
+      break;
+
+    case "failed":
+      toast.error("Could not restore the connection");
+      break;
+  }
+});
+```
+
+### API
+
+#### Options
+
+```ts
+type SocketOptions = {
+  polyfills?: { WebSocket: any }; // Add a custom polyfill for Websockt
+
+  //retries related,
+  maxReconnectionDelay?: number; //maximum reconnection delay
+  minReconnectionDelay?: number; //minimum reconnection delay
+  reconnectionDelayGrowFactor?: number; //how fast the reconnection delay grows
+
+  //a custom delay that will override the above config if provide this argument, useful for more customized delays
+  getDelay?: (retryCount: number) => number;
+  maxRetries?: number; //maximum number of consecutive failed attempts before moving to disconnected state
+
+  //connection related
+  connectionTimeout?: number; // retry if not connected after this time, in ms
+  paramsTimeout?: number; // retry if params function is not resolved within this time, in ms
+
+  //application related
+  startClosed?: boolean; // start the socket in 'closed' state. and call .reconnect() to connect
+  lostConnectionTimeout?: number; // timeout for lostconnection event
+  closeCodes?: number | number[]; //close the connection if server closed with these closeCodes
+
+  buffer?: boolean | { maxEnqueuedMessages: number }; //buffering related. see the buffering section for more details
+
+  // heartbeat related
+  heartbeatInterval?: number; //the interval at which we send the heartbeat
+  maxMissedPingss?: number; //max number of missed consecutive ping messages before moving to reconnect
+  ignoreFocusEvents?: boolean; //will not send heartbeats on focus event. if set to true
+  ignoreNetworkEvents?: boolean; //will not send heartbeats on network offline event. if set to true
+  pingTimeout?: number; //timeout to wait for the pong message after sending the ping
+  pingMessage?: string; //the ping message to send to the server
+  pongMessage?: string; //the pong message to recieve from the server
+
+  //debug
+  debug?: boolean; //set to true. to see the internal logs for debugging
+  debugLogger?: (...args: any[]) => void; //provide a custom logger
+
+  //custom function for dynamic url
+  url?: (info: {
+    retryInfo: RetryInfo;
+    url: string | URL;
+    params: any;
+  }) => string;
+
+  //function for adding auth or other data
+  params?: (info: RetryInfo) => Promise<object>;
+
+  //do not use this~
+  //todo maybe mark this as experimental? - or hide behind advanced config :/
+  unstable_connectionResolver?: (
+    con: WebSocket,
+    resolver: () => void,
+    rejecter: (err?: any) => void
+  ) => Promise<void> | void;
+};
+```
+
+#### Methods
+
+```ts
+constructor(url: string, protocols: string[] | undefined, options: SocketOptions)
+
+close()
+reconnect()
+
+getStatus(): Status
+send(data: string | ArrayBuffer | Blob | ArrayBufferView)
+
+addEventListener(type:  'open' | 'close' | 'status' | 'message' | 'error' | 'disconnect',  listener: Listener)
+removeEventListener(type:  'open' | 'close' | 'status' | 'message' | 'error' | 'disconnect',  listener: Listener)
+```
+
+#### Attributes
+
+```ts
+binaryType: BinaryType;
+bufferdAmount: number;
+extensions: string;
+onclose: EventListener;
+onerror: EventListener;
+onmessage: EventListener;
+onopen: EventListener;
+protocol: string;
+readyState: number;
+url: string;
+retryCount: number;
+lastMessageSent: number;
+```
