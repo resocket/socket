@@ -12,8 +12,8 @@ export default {
   footer: {
     text: (
       <span>
-        Socket is an open-source project of{" "}
-        <a href="https://resocket.io">Resocket.</a>
+        <a href="https://resocket.io">Resocket. </a> making the future of
+        multiplayer devtools
       </span>
     ),
   },

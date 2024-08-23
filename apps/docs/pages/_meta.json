@@ -1,5 +1,11 @@
 {
-  "index": "Resocket",
+  "index": {
+    "title": "Resocket",
+    "theme": {
+      "typesetting": "article",
+      "breadcrumb": false
+    }
+  },
   "socket": {
     "title": "Socket",
     "theme": {
