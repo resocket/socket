@@ -361,13 +361,17 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
     };
   }
 
-  private onSocketOpen = (event: Event) => {
-    //todo maybe we should send the messages on the transition to connected?
+  private flushBuffer() {
     this._enqueuedMessages.forEach((msg) => {
       this._socket!.send(msg);
     });
     this._enqueuedMessages = [];
     this._lastMessageSent = Date.now();
+  }
+
+  private onSocketOpen = (event: Event) => {
+    //todo maybe we should send the messages on the transition to connected?
+    this.flushBuffer();
 
     if (this.onopen) {
       this.onopen(event);
@@ -429,14 +433,18 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
       this.transition("auth");
   };
 
+  private shouldBuffer(force: boolean) {
+    return (
+      (this._socket !== null && this._bufferedMessages.length > 0 && !force) ||
+      (this._options.unstable_connectionResolver && this._socket === null)
+    );
+  }
+
   private onSocketMessage = (
     event: MessageEvent<any>,
     force: boolean = false
   ) => {
-    if (
-      (this._socket !== null && this._bufferedMessages.length > 0 && !force) ||
-      (this._options.unstable_connectionResolver && this._socket === null)
-    ) {
+    if (this.shouldBuffer(force)) {
       this._debug("[buffering] added to buffer ", event.data);
 
       this._bufferedMessages.push(event);
@@ -480,9 +488,7 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
       const stateChangeListener = () => {
         reject("status changes abort");
       };
-
       stateChangeListenerRef = stateChangeListener;
-
       this.addEventListener("_internalStateChange", stateChangeListener);
 
       const conn = new WebSocket(url, this._protocols);
@@ -491,21 +497,20 @@ export class ReSocket extends CustomEventTarget<WebSocketEventMap> {
       const cleanupReject = (e: any) => {
         reject(conn);
       };
-
       cleanupRejectRef = cleanupReject;
 
+      const resolver = () => {
+        conn.removeEventListener("close", cleanupReject);
+        conn.removeEventListener("error", cleanupReject);
+        this.removeEventListener("_internalStateChange", stateChangeListener);
+
+        //! should be cleanedup by the cleanups
+        this._socket = con;
+
+        resolve(conn);
+      };
+
       conn.addEventListener("open", (e) => {
-        const resolver = () => {
-          conn.removeEventListener("close", cleanupReject);
-          conn.removeEventListener("error", cleanupReject);
-          this.removeEventListener("_internalStateChange", stateChangeListener);
-
-          //! should be cleanedup by the cleanups
-          this._socket = con;
-
-          resolve(conn);
-        };
-
         //! we let connectionResolver resolve the connection instead.
         if (this._options.unstable_connectionResolver) {
           this._options.unstable_connectionResolver(conn, resolver, reject);
