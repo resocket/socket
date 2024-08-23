@@ -21,9 +21,9 @@ export default function Home() {
             Resocket
           </h1>
           <p className="text-lg text-gray-300 mb-4">
-            At Resocket, we're creating devtools for real-time and multiplayer
-            applications. We're actively looking for early adopters and design
-            partners to help shape the future of our tools.
+            At Resocket, we&apos;re creating devtools for real-time and
+            multiplayer applications. We&apos;re actively looking for early
+            adopters and design partners to help shape the future of our tools.
           </p>
           <p className="text-lg text-gray-300 mb-4">
             We’ve just released our first open-source package:
@@ -51,8 +51,8 @@ export default function Home() {
             the Resocket community.
           </p>
           <p className="text-lg text-gray-300">
-            We’re also open to business collaborations. If you're interested,
-            reach out to us at{" "}
+            We’re also open to business collaborations. If you&apos;re
+            interested, reach out to us at{" "}
             <a
               href="mailto:shibru127@gmail.com"
               className="text-blue-400 hover:underline"
