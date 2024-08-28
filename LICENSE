@@ -1,17 +1,9 @@
-# Licensing Information
+MIT License
 
-This repository contains multiple packages, each of which may be licensed under different terms.
+Copyright (c) 2024 dev-badace (Github Handle of the author)
 
-## Packages with Open-Source Licenses
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Certain packages in this repository are open-sourced under permissive licenses such as the MIT License. These packages are intended to be freely used, modified, and distributed. The specific license for each open-source package can be found in the respective package directory.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-## Packages with Commercial Licenses
-
-Other packages in this repository are subject to stricter licensing terms and may require a paid license for commercial use. The specific license for each of these packages can also be found in the respective package directory.
-
-## Summary
-
-Please refer to the `LICENSE` file within each package's directory for the exact licensing terms that apply.
-
-If you are unsure about the licensing of a particular package or need further clarification, please contact [Your Contact Information].
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SO
