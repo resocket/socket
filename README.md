@@ -16,7 +16,7 @@
 
 ### Documentation
 
-You can find the documentation for Socket [here](https://docs.resocket.io/socket).
+You can find the documentation for Socket [here](https://socket-bfm.pages.dev/socket/quickstart).
 
 ### Motivation
 
